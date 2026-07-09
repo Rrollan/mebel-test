@@ -1,5 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // --- Lenis Smooth Scroll ---
+    const lenis = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        direction: 'vertical',
+        gestureDirection: 'vertical',
+        smooth: true,
+        mouseMultiplier: 1,
+        smoothTouch: false, // keep native touch scrolling feel, but could be true
+        touchMultiplier: 2,
+    });
+
+    function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+
     // --- Hamburger Menu Logic ---
     const hamburger = document.querySelector('.hamburger');
     const mobileNav = document.getElementById('mobile-nav');
@@ -38,6 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- GSAP MatchMedia (Responsive Animations) ---
     gsap.registerPlugin(ScrollTrigger);
+    
+    // Sync ScrollTrigger with Lenis
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+    gsap.ticker.lagSmoothing(0);
+
     let mm = gsap.matchMedia();
 
     // Common Animations (All screens)
@@ -66,14 +93,58 @@ document.addEventListener('DOMContentLoaded', () => {
         start: "top 85%", once: true
     });
 
-    // Scale in
-    ScrollTrigger.batch('.gs-scale', {
-        onEnter: batch => gsap.fromTo(batch, { scale: 0.95, opacity: 0 }, { opacity: 1, scale: 1, stagger: 0.15, duration: 1, ease: 'power3.out' }),
-        start: "top 85%", once: true
-    });
+    // Scale in - removed from portfolio items to replace with deck of cards
 
     mm.add("(min-width: 769px)", () => {
         // --- Desktop Only ---
+        // Abstract Spheres Parallax
+        const spheres = document.querySelectorAll('.gs-parallax-sphere');
+        if(spheres.length) {
+            document.addEventListener('mousemove', (e) => {
+                const x = (e.clientX / window.innerWidth - 0.5) * 20;
+                const y = (e.clientY / window.innerHeight - 0.5) * 20;
+                
+                gsap.to(spheres[0], { x: x * 2, y: y * 2, duration: 2, ease: "power2.out" });
+                gsap.to(spheres[1], { x: x * -3, y: y * -3, duration: 2.5, ease: "power2.out" });
+                gsap.to(spheres[2], { x: x * 1.5, y: y * -1.5, duration: 1.5, ease: "power2.out" });
+            });
+
+            gsap.to(spheres[0], { yPercent: 30, ease: "none", scrollTrigger: { trigger: ".about", scrub: true } });
+            gsap.to(spheres[1], { yPercent: -50, ease: "none", scrollTrigger: { trigger: ".about", scrub: true } });
+            gsap.to(spheres[2], { yPercent: 20, ease: "none", scrollTrigger: { trigger: ".about", scrub: true } });
+        }
+
+        // Deck of Cards Effect for Portfolio
+        const cards = gsap.utils.toArray('.portfolio-item');
+        if (cards.length) {
+            cards.forEach((card, i) => {
+                ScrollTrigger.create({
+                    trigger: card,
+                    start: "top top+=100", // When card hits near top
+                    endTrigger: ".portfolio-grid",
+                    end: "bottom top",
+                    pin: true,
+                    pinSpacing: false,
+                    id: "card-pin-" + i
+                });
+
+                if (i !== cards.length - 1) {
+                    gsap.to(card, {
+                        scale: 0.9,
+                        opacity: 0.3,
+                        rotationX: -10, // Tilt backward
+                        scrollTrigger: {
+                            trigger: card,
+                            start: "top top+=100",
+                            endTrigger: cards[i + 1],
+                            end: "top top+=100",
+                            scrub: true
+                        }
+                    });
+                }
+            });
+        }
+
         // Parallax
         gsap.utils.toArray('.gs-parallax img').forEach(function(img) {
             gsap.to(img, {
@@ -86,9 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
         gsap.fromTo('.gs-reveal-left', { x: -50, opacity: 0 }, { x: 0, opacity: 1, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: '.contact-grid', start: "top 80%" } });
         gsap.fromTo('.gs-reveal-right', { x: 50, opacity: 0 }, { x: 0, opacity: 1, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: '.contact-grid', start: "top 80%" } });
 
-        // Initialize VanillaTilt
+        // Initialize VanillaTilt (Liquid Glass Tilt)
         VanillaTilt.init(document.querySelectorAll(".js-tilt"), {
-            max: 10, speed: 400, glare: true, "max-glare": 0.2
+            max: 8, speed: 600, glare: true, "max-glare": 0.15, easing: "cubic-bezier(.03,.98,.52,.99)", scale: 1.02
         });
 
         // Mouse Cursor & Glow (if pointer fine)

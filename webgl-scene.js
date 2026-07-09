@@ -28,15 +28,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const particlesCount = isMobile ? 500 : 2000;
     
     const posArray = new Float32Array(particlesCount * 3);
+    const originalPosArray = new Float32Array(particlesCount * 3);
+    const velocityArray = new Float32Array(particlesCount * 3);
     const colorArray = new Float32Array(particlesCount * 3);
 
     const color1 = new THREE.Color(0xe8c872); // Premium Gold
     const color2 = new THREE.Color(0xffffff); // White
 
     for(let i = 0; i < particlesCount * 3; i+=3) {
-        posArray[i] = (Math.random() - 0.5) * 100;
-        posArray[i+1] = (Math.random() - 0.5) * 100;
-        posArray[i+2] = (Math.random() - 0.5) * 100;
+        const x = (Math.random() - 0.5) * 100;
+        const y = (Math.random() - 0.5) * 100;
+        const z = (Math.random() - 0.5) * 50;
+
+        posArray[i] = x; posArray[i+1] = y; posArray[i+2] = z;
+        originalPosArray[i] = x; originalPosArray[i+1] = y; originalPosArray[i+2] = z;
+        velocityArray[i] = 0; velocityArray[i+1] = 0; velocityArray[i+2] = 0;
 
         const mixedColor = color1.clone().lerp(color2, Math.random());
         colorArray[i] = mixedColor.r;
@@ -48,29 +54,36 @@ document.addEventListener('DOMContentLoaded', () => {
     particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
 
     const material = new THREE.PointsMaterial({
-        size: isMobile ? 0.25 : 0.15, // Make particles slightly larger on mobile since there are fewer
+        size: isMobile ? 0.3 : 0.2, // Slightly larger
         vertexColors: true,
         blending: THREE.AdditiveBlending,
         transparent: true,
-        opacity: 0.8
+        opacity: 0.6,
+        depthWrite: false
     });
 
     const particlesMesh = new THREE.Points(particlesGeometry, material);
     scene.add(particlesMesh);
 
     // Pointer Interaction (replaces separate mouse and touch events)
-    let pointerX = 0;
-    let pointerY = 0;
-    let targetX = 0;
-    let targetY = 0;
+    // Raycaster for particle repulsion
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2(-9999, -9999);
 
     let windowHalfX = window.innerWidth / 2;
     let windowHalfY = window.innerHeight / 2;
 
     function onPointerMove(event) {
-        pointerX = (event.clientX - windowHalfX);
-        pointerY = (event.clientY - windowHalfY);
+        // Normalized device coordinates for raycaster
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     }
+
+    // Reset mouse when leaving screen
+    document.addEventListener('pointerout', () => {
+        mouse.x = -9999;
+        mouse.y = -9999;
+    });
 
     document.addEventListener('pointermove', onPointerMove, { passive: true });
     document.addEventListener('pointerdown', onPointerMove, { passive: true });
@@ -91,24 +104,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const elapsedTime = clock.getElapsedTime();
 
-        // Sensitivity is different for mobile (touch covers less screen pixel distance usually)
-        const factor = isMobile ? 0.002 : 0.001;
-        targetX = pointerX * factor;
-        targetY = pointerY * factor;
+        // 1. Raycaster intersection point on a conceptual plane at z=0
+        raycaster.setFromCamera(mouse, camera);
+        const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+        const targetPoint = new THREE.Vector3();
+        raycaster.ray.intersectPlane(planeZ, targetPoint);
 
-        // Base rotation
-        particlesMesh.rotation.y += 0.001;
-        particlesMesh.rotation.x += 0.0005;
+        // 2. Repulsion Physics
+        const positions = particlesGeometry.attributes.position.array;
+        
+        // Transform targetPoint from World to Local mesh coordinates
+        const localTarget = targetPoint.clone();
+        particlesMesh.worldToLocal(localTarget);
 
-        // Smooth Lerp for pointer interaction
-        particlesMesh.rotation.y += 0.05 * (targetX - particlesMesh.rotation.y);
-        particlesMesh.rotation.x += 0.05 * (targetY - particlesMesh.rotation.x);
+        for(let i = 0; i < particlesCount * 3; i+=3) {
+            const ox = originalPosArray[i];
+            const oy = originalPosArray[i+1];
+            const oz = originalPosArray[i+2];
+
+            const px = positions[i];
+            const py = positions[i+1];
+            const pz = positions[i+2];
+
+            // Distance to mouse (in local space)
+            const dx = localTarget.x - px;
+            const dy = localTarget.y - py;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            
+            // Magnetic Repulsion
+            const forceDirectionX = dx / distance;
+            const forceDirectionY = dy / distance;
+            const maxDistance = 15; // Radius of effect
+            const force = (maxDistance - distance) / maxDistance;
+            
+            if(distance < maxDistance && mouse.x !== -9999) {
+                // Push away
+                velocityArray[i] -= forceDirectionX * force * 0.15;
+                velocityArray[i+1] -= forceDirectionY * force * 0.15;
+            }
+
+            // Spring back to original position
+            velocityArray[i] += (ox - px) * 0.02;
+            velocityArray[i+1] += (oy - py) * 0.02;
+            velocityArray[i+2] += (oz - pz) * 0.02;
+
+            // Friction
+            velocityArray[i] *= 0.9;
+            velocityArray[i+1] *= 0.9;
+            velocityArray[i+2] *= 0.9;
+
+            // Apply velocity
+            positions[i] += velocityArray[i];
+            positions[i+1] += velocityArray[i+1];
+            positions[i+2] += velocityArray[i+2];
+        }
+        
+        particlesGeometry.attributes.position.needsUpdate = true;
+
+        // Base slow rotation for the whole system
+        particlesMesh.rotation.y += 0.0005;
+        particlesMesh.rotation.x += 0.0002;
 
         // Scroll interaction - move camera down as we scroll down
         camera.position.y = -scrollY * 0.01;
         
         // Gentle float effect
-        particlesMesh.position.y = Math.sin(elapsedTime * 0.5) * 2;
+        particlesMesh.position.y = Math.sin(elapsedTime * 0.3) * 2;
 
         renderer.render(scene, camera);
         animationFrameId = requestAnimationFrame(animate);
