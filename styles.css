@@ -31,8 +31,6 @@ body {
     line-height: 1.6;
     overflow-x: hidden;
     position: relative;
-    /* Prevent iOS rubber banding */
-    overscroll-behavior-y: none;
 }
 
 /* Base custom cursor (hidden by default unless pointer:fine) */
@@ -284,7 +282,7 @@ h1, h2, h3, h4 {
 
 /* Hero Section */
 .hero {
-    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     align-items: center;
     position: relative;
@@ -412,6 +410,10 @@ h1, h2, h3, h4 {
     .hero-actions .btn { width: 100%; }
     .footer-inner { grid-template-columns: 1fr; gap: 2rem; }
     
+    #webgl-canvas {
+        pointer-events: none !important; /* Prevent scroll blocking on mobile */
+    }
+    
     /* Touch devices specific styling to ensure text is always readable since hover is disabled */
     .port-img { filter: grayscale(0%) brightness(0.9); }
     .portfolio-overlay h4, .portfolio-overlay p { opacity: 1; transform: translateY(0); }
@@ -428,4 +430,9 @@ h1, h2, h3, h4 {
     .service-card {
         animation: subtlePulse 4s infinite;
     }
+}
+
+/* Hardware acceleration for GSAP animations */
+.gs-reveal-up, .gs-stagger, .gs-scale, .gs-reveal-left, .gs-reveal-right {
+    will-change: transform, opacity;
 }
