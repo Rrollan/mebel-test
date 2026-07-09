@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Komod Pavlodar | Эксклюзивная мебель на заказ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,15 +27,32 @@
     <header class="header">
         <div class="container header-inner">
             <a href="#" class="logo" data-cursor-text="Клик">Komod Pavlodar</a>
-            <nav class="nav">
+            
+            <nav class="nav desktop-nav">
                 <a href="#about" class="nav-link">О нас</a>
                 <a href="#portfolio" class="nav-link">Портфолио</a>
                 <a href="#services" class="nav-link">Услуги</a>
                 <a href="#contact" class="nav-link">Контакты</a>
             </nav>
-            <a href="#contact" class="btn btn-outline" data-cursor-text="Написать">Оставить заявку</a>
+            <a href="#contact" class="btn btn-outline desktop-btn" data-cursor-text="Написать">Оставить заявку</a>
+            
+            <button class="hamburger" aria-expanded="false" aria-controls="mobile-nav" aria-label="Открыть меню">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
         </div>
     </header>
+
+    <nav id="mobile-nav" class="mobile-nav" aria-hidden="true">
+        <div class="mobile-nav-content">
+            <a href="#about" class="mobile-link">О нас</a>
+            <a href="#portfolio" class="mobile-link">Портфолио</a>
+            <a href="#services" class="mobile-link">Услуги</a>
+            <a href="#contact" class="mobile-link">Контакты</a>
+            <a href="#contact" class="btn btn-primary mt-4">Оставить заявку</a>
+        </div>
+    </nav>
 
     <main>
         <section class="hero" id="hero">
@@ -71,8 +88,8 @@
                             <li>Гарантия качества 5 лет</li>
                         </ul>
                     </div>
-                    <div class="about-image gs-parallax">
-                        <div class="image-wrapper glass-panel">
+                    <div class="about-image">
+                        <div class="image-wrapper glass-panel gs-parallax">
                             <img src="assets/portfolio_living.jpg" alt="Мастерская Komod Pavlodar">
                         </div>
                     </div>
@@ -87,17 +104,18 @@
                     <p class="section-subtitle">Создаем мебель для любой зоны вашего дома</p>
                 </div>
                 <div class="services-grid">
-                    <div class="service-card glass-panel gs-stagger" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
+                    <!-- Tilt data attrs removed from HTML, initialized via JS based on matchMedia -->
+                    <div class="service-card glass-panel gs-stagger js-tilt">
                         <div class="card-glow"></div>
                         <h3>Кухни на заказ</h3>
                         <p>Эргономичные и стильные кухонные гарнитуры, продуманные до мелочей. Встраиваемая техника, умные системы хранения и долговечные фасады.</p>
                     </div>
-                    <div class="service-card glass-panel gs-stagger" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
+                    <div class="service-card glass-panel gs-stagger js-tilt">
                         <div class="card-glow"></div>
                         <h3>Шкафы и гардеробные</h3>
                         <p>Вместительные системы хранения, которые идеально вписываются в геометрию помещения. Раздвижные системы, зеркала и подсветка.</p>
                     </div>
-                    <div class="service-card glass-panel gs-stagger" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
+                    <div class="service-card glass-panel gs-stagger js-tilt">
                         <div class="card-glow"></div>
                         <h3>Мебель для гостиной</h3>
                         <p>ТВ-зоны, стеллажи, комоды и консоли. Индивидуальный дизайн, который подчеркнет характер вашего интерьера.</p>
@@ -205,7 +223,6 @@
         </div>
     </footer>
 
-    <!-- Delete old script.js as we will use app.js and webgl-scene.js -->
     <script src="webgl-scene.js"></script>
     <script src="app.js"></script>
 </body>
