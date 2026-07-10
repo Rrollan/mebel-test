@@ -102,13 +102,13 @@ function BrandIcon() {
 }
 
 function Navigation() {
-  const links = ['Portfolio', 'Catalog', 'Designers', 'Pricing', '3D Tour']
+  const links = ['Проекты', 'Каталог', 'Дизайнерам', 'Цены', '3D-тур']
 
   return (
-    <nav className="fixed left-0 right-0 top-0 z-[100] flex items-center justify-between p-4 sm:p-5" aria-label="Primary navigation">
-      <a href="#" className="flex items-center" aria-label="Lumina home">
+    <nav className="fixed left-0 right-0 top-0 z-[100] flex items-center justify-between p-4 sm:p-5" aria-label="Основная навигация">
+      <a href="#" className="flex items-center" aria-label="Komod Pavlodar — главная">
         <BrandIcon />
-        <span className="font-playfair ml-2 text-2xl italic text-white">Lumina</span>
+        <span className="ml-2 text-xl font-semibold uppercase tracking-[-0.04em] text-white sm:text-2xl">Komod <span className="font-playfair font-normal italic">Pavlodar</span></span>
       </a>
 
       <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2 py-2 backdrop-blur-md md:flex">
@@ -131,9 +131,9 @@ function Navigation() {
         type="button"
         className="hidden rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-neutral-900 transition-colors hover:bg-neutral-200 md:block"
       >
-        Book Consultation
+        Рассчитать для нас
       </button>
-      <button type="button" className="rounded-full border border-white/25 bg-black/20 p-2 text-white backdrop-blur-md md:hidden" aria-label="Open menu">
+      <button type="button" className="rounded-full border border-white/25 bg-black/20 p-2 text-white backdrop-blur-md md:hidden" aria-label="Открыть меню">
         <Menu size={22} />
       </button>
     </nav>
@@ -197,13 +197,13 @@ export default function App() {
               className="hero-anim hero-reveal font-playfair block text-5xl font-normal italic drop-shadow-lg sm:text-7xl md:text-8xl"
               style={{ letterSpacing: '-0.05em', animationDelay: '0.25s' }}
             >
-              Reveal the
+              Раскройте
             </span>
             <span
               className="hero-anim hero-reveal -mt-1 block text-5xl font-normal drop-shadow-lg sm:text-7xl md:text-8xl"
               style={{ letterSpacing: '-0.08em', animationDelay: '0.42s' }}
             >
-              potential
+              потенциал
             </span>
           </h1>
         </div>
@@ -213,7 +213,7 @@ export default function App() {
           style={{ animationDelay: '0.7s' }}
         >
           <p className="text-sm leading-relaxed text-white/90">
-            Every empty room is a blank canvas. Move your cursor to visualize how carefully selected furniture and decor can completely transform the atmosphere of your space.
+            Пустая комната — это пространство возможностей. Двигайте курсором, чтобы увидеть, как мебель по индивидуальному проекту меняет интерьер и делает его по-настоящему вашим.
           </p>
         </div>
 
@@ -222,13 +222,13 @@ export default function App() {
           style={{ animationDelay: '0.85s' }}
         >
           <p className="text-xs leading-relaxed text-white/90 sm:text-sm">
-            Our interactive preview lets you furnish the room in real-time. Discover the perfect balance of lighting, textures, and comfort.
+            Проектируем и производим кухни, шкафы и мебель для всего дома в Павлодаре. Покажем будущий интерьер, подберём материалы и рассчитаем стоимость.
           </p>
           <button
             type="button"
             className="rounded-full bg-[#8B7355] px-7 py-3 text-sm font-medium text-white transition-all hover:scale-[1.03] hover:bg-[#705c44] hover:shadow-lg hover:shadow-[#8B7355]/40 active:scale-95"
           >
-            Start Decorating
+            Рассчитать для нас
           </button>
         </div>
       </section>
