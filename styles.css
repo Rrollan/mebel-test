@@ -68,9 +68,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hero-proof li { display: grid; gap: .2rem; padding-right: 1rem; }
 .hero-proof strong { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 400; }
 .hero-proof span { color: var(--muted); font-size: .72rem; line-height: 1.4; }
-.hero-visual { position: relative; min-width: 0; align-self: start; }
-.hero-visual img { width: 100%; height: min(68vh, 700px); min-height: 520px; object-fit: cover; }
-.hero-visual figcaption { position: absolute; right: -1px; bottom: -1px; width: min(280px, 60%); display: grid; padding: 1.25rem 1.5rem; color: white; background: var(--accent-dark); }
+.hero-visual { position: relative; min-width: 0; align-self: start; aspect-ratio: 4 / 5; overflow: hidden; background: #ded8cc; }
+.hero-visual img { width: 100%; height: 100%; object-fit: cover; object-position: 52% center; }
+.hero-visual figcaption { position: absolute; right: 1.25rem; bottom: 1.25rem; width: min(280px, calc(100% - 2.5rem)); display: grid; padding: 1.25rem 1.5rem; color: white; background: rgba(61,73,50,.94); box-shadow: 0 12px 32px rgba(34,35,31,.16); }
 .hero-visual figcaption span { opacity: .72; font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; }
 .hero-visual figcaption strong { font-family: var(--font-heading); font-weight: 400; }
 
@@ -153,7 +153,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
     .hero { background: var(--bg); }
     .hero-layout, .about-grid, .contact-grid { grid-template-columns: 1fr; }
     .hero-content { max-width: 760px; padding-top: 0; }
-    .hero-visual img { height: 560px; min-height: 0; }
+    .hero-visual { aspect-ratio: 16 / 10; }
+    .hero-visual img { height: 100%; min-height: 0; }
     .services-grid { grid-template-columns: 1fr; gap: 0; }
     .service-card { min-height: 0; }
     .service-number { margin-bottom: 2rem; }
@@ -176,7 +177,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
     .hero-proof { gap: .6rem; }
     .hero-proof li { padding-right: .4rem; }
     .hero-proof strong { font-size: 1rem; }
-    .hero-visual img { height: 430px; }
+    .hero-visual { aspect-ratio: 4 / 5; }
+    .hero-visual img { height: 100%; }
+    .hero-visual figcaption { right: .75rem; bottom: .75rem; width: calc(100% - 1.5rem); }
     .portfolio-grid { grid-template-columns: 1fr; }
     .portfolio-item-featured { grid-column: auto; }
     .portfolio-item-featured .portfolio-img-container { aspect-ratio: 4 / 3; }
