@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Camera, Menu, X } from 'lucide-react'
 import emptyRoomImage from '../assets/room-empty.jpg'
 import furnishedRoomImage from '../assets/room-furnished.jpg'
 
@@ -103,11 +103,9 @@ function BrandIcon() {
 
 type NavigationProps = {
   onOpenContact: () => void
-  onOpenInfo: (section: string) => void
 }
 
-function Navigation({ onOpenContact, onOpenInfo }: NavigationProps) {
-  const links = ['Проекты', 'Каталог', 'Дизайнерам', 'Цены', '3D-тур']
+function Navigation({ onOpenContact }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
@@ -117,39 +115,26 @@ function Navigation({ onOpenContact, onOpenInfo }: NavigationProps) {
         <span className="ml-2 text-base font-bold uppercase tracking-[-0.025em] text-white drop-shadow-sm sm:text-xl">Komod <span className="font-playfair ml-0.5 font-medium normal-case italic text-white">Pavlodar</span></span>
       </a>
 
-      <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2 py-2 backdrop-blur-md md:flex">
-        {links.map((link, index) => (
-          <button
-            key={link}
-            type="button"
-            onClick={() => onOpenInfo(link)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              index === 0
-                ? 'bg-white text-neutral-900'
-                : 'text-white/80 hover:bg-white/20 hover:text-white'
-            }`}
-          >
-            {link}
-          </button>
-        ))}
+      <div className="ml-auto hidden items-center gap-2 md:flex">
+        <a href="https://www.instagram.com/komod_pavlodar/" target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-full border border-white/20 bg-black/35 px-4 py-2.5 text-sm font-medium text-white backdrop-blur-md transition-colors hover:bg-white/15" aria-label="Instagram Komod Pavlodar">
+          <Camera size={17} />
+          <span>@komod_pavlodar</span>
+        </a>
+        <button
+          type="button"
+          onClick={onOpenContact}
+          className="rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-neutral-900 transition-all hover:scale-[1.02] hover:bg-neutral-200 active:scale-95"
+        >
+          Оставить заявку
+        </button>
       </div>
-
-      <button
-        type="button"
-        onClick={onOpenContact}
-        className="hidden rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-neutral-900 transition-colors hover:bg-neutral-200 md:block"
-      >
-        Рассчитать для нас
-      </button>
       <button onClick={() => setIsMenuOpen((open) => !open)} type="button" className="rounded-full border border-white/25 bg-black/50 p-2 text-white backdrop-blur-md md:hidden" aria-expanded={isMenuOpen} aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}>
         {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
       </button>
       {isMenuOpen ? (
-        <div className="absolute left-4 right-4 top-[72px] flex flex-col gap-1 rounded-2xl border border-white/15 bg-neutral-950/95 p-2 shadow-2xl backdrop-blur-xl md:hidden">
-          {links.map((link) => (
-            <button key={link} type="button" onClick={() => { onOpenInfo(link); setIsMenuOpen(false) }} className="rounded-xl px-4 py-3 text-left text-sm font-medium text-white hover:bg-white/10">{link}</button>
-          ))}
-          <button type="button" onClick={() => { onOpenContact(); setIsMenuOpen(false) }} className="mt-1 rounded-xl bg-[#8B7355] px-4 py-3 text-left text-sm font-semibold text-white">Рассчитать для нас</button>
+        <div className="nav-menu-in absolute left-4 right-4 top-[72px] flex flex-col gap-2 rounded-2xl border border-white/15 bg-neutral-950/95 p-3 shadow-2xl backdrop-blur-xl md:hidden">
+          <a href="https://www.instagram.com/komod_pavlodar/" target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-white hover:bg-white/10"><Camera size={18} />@komod_pavlodar</a>
+          <button type="button" onClick={() => { onOpenContact(); setIsMenuOpen(false) }} className="rounded-xl bg-[#8B7355] px-4 py-3 text-left text-sm font-semibold text-white">Оставить заявку</button>
         </div>
       ) : null}
     </nav>
@@ -161,12 +146,12 @@ export default function App() {
   const smooth = useRef<Point>({ x: -999, y: -999 })
   const rafRef = useRef<number | undefined>(undefined)
   const [cursorPos, setCursorPos] = useState<Point>({ x: -999, y: -999 })
-  const [dialog, setDialog] = useState<'contact' | 'info' | null>(null)
-  const [infoTitle, setInfoTitle] = useState('')
+  const [dialog, setDialog] = useState<'contact' | null>(null)
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
-  const openInfo = (section: string) => {
-    setInfoTitle(section)
-    setDialog('info')
+  const openContact = () => {
+    setIsSubmitted(false)
+    setDialog('contact')
   }
 
   const closeDialog = () => setDialog(null)
@@ -198,12 +183,25 @@ export default function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!dialog) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeDialog()
+    }
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [dialog])
+
   return (
     <main
       className="min-h-screen bg-neutral-900 tracking-[-0.02em]"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
-      <Navigation onOpenContact={() => setDialog('contact')} onOpenInfo={openInfo} />
+      <Navigation onOpenContact={openContact} />
       <section
         id="top"
         className="relative h-screen w-full overflow-hidden bg-black"
@@ -243,35 +241,41 @@ export default function App() {
           </p>
           <button
             type="button"
-            onClick={() => setDialog('contact')}
+            onClick={openContact}
             className="rounded-full bg-[#8B7355] px-7 py-3 text-sm font-medium text-white transition-all hover:scale-[1.03] hover:bg-[#705c44] hover:shadow-lg hover:shadow-[#8B7355]/40 active:scale-95"
           >
-            Рассчитать для нас
+            Оставить заявку
           </button>
         </div>
       </section>
 
       {dialog ? (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm" role="presentation" onMouseDown={closeDialog}>
-          <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-neutral-900 p-6 text-white shadow-2xl sm:p-8" role="dialog" aria-modal="true" aria-labelledby="dialog-title" onMouseDown={(event) => event.stopPropagation()}>
-            <button type="button" onClick={closeDialog} className="absolute right-4 top-4 rounded-full p-2 text-white/70 transition-colors hover:bg-white/10 hover:text-white" aria-label="Закрыть окно"><X size={20} /></button>
-            {dialog === 'contact' ? (
-              <>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#bca17d]">Komod Pavlodar</p>
-                <h2 id="dialog-title" className="mb-3 text-3xl font-semibold tracking-[-0.04em]">Рассчитаем ваш проект</h2>
-                <p className="mb-6 text-sm leading-relaxed text-white/65">Оставьте номер телефона — свяжемся с вами, уточним задачу и подготовим предварительный расчёт.</p>
-                <form onSubmit={(event) => { event.preventDefault(); alert('Спасибо! Заявка принята.'); closeDialog() }} className="space-y-3">
-                  <label className="block"><span className="sr-only">Ваше имя</span><input required name="name" placeholder="Ваше имя" className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 outline-none transition-colors placeholder:text-white/35 focus:border-[#bca17d]" /></label>
-                  <label className="block"><span className="sr-only">Номер телефона</span><input required name="phone" type="tel" placeholder="+7 (___) ___-__-__" className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 outline-none transition-colors placeholder:text-white/35 focus:border-[#bca17d]" /></label>
-                  <button type="submit" className="w-full rounded-xl bg-[#8B7355] px-5 py-3.5 text-sm font-semibold transition-colors hover:bg-[#705c44]">Получить расчёт</button>
-                </form>
-              </>
+        <div className="modal-backdrop fixed inset-0 z-[200] flex items-center justify-center bg-[#171410]/65 p-5 backdrop-blur-md" role="presentation" onMouseDown={closeDialog}>
+          <div className="modal-card relative w-full max-w-[460px] overflow-hidden rounded-[2rem] border border-[#d8cbb9] bg-[#f3eee6] p-7 text-[#29251f] shadow-[0_30px_100px_rgba(0,0,0,.35)] sm:p-10" role="dialog" aria-modal="true" aria-labelledby="dialog-title" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-[#c7ad87]/30 blur-3xl" />
+            <button type="button" onClick={closeDialog} className="absolute right-5 top-5 rounded-full border border-[#d8cbb9] bg-white/50 p-2 text-[#635c52] transition-all hover:rotate-90 hover:bg-white hover:text-[#29251f]" aria-label="Закрыть окно"><X size={19} /></button>
+            {isSubmitted ? (
+              <div className="success-in py-8 text-center">
+                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#8B7355] text-2xl text-white">✓</div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8B7355]">Заявка отправлена</p>
+                <h2 id="dialog-title" className="font-playfair mb-3 text-4xl italic tracking-[-0.04em]">Спасибо!</h2>
+                <p className="mx-auto max-w-xs text-sm leading-relaxed text-[#6f675c]">Мы свяжемся с вами в ближайшее время и обсудим будущий проект.</p>
+                <button type="button" onClick={closeDialog} className="mt-7 rounded-full bg-[#29251f] px-7 py-3 text-sm font-semibold text-white transition-transform hover:scale-[1.02] active:scale-95">Хорошо</button>
+              </div>
             ) : (
               <>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#bca17d]">Komod Pavlodar</p>
-                <h2 id="dialog-title" className="mb-3 text-3xl font-semibold tracking-[-0.04em]">{infoTitle}</h2>
-                <p className="text-sm leading-relaxed text-white/65">Раздел находится в разработке. Оставьте заявку — мы расскажем подробнее и подготовим информацию по вашему проекту.</p>
-                <button type="button" onClick={() => setDialog('contact')} className="mt-6 w-full rounded-xl bg-[#8B7355] px-5 py-3.5 text-sm font-semibold transition-colors hover:bg-[#705c44]">Рассчитать для нас</button>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#8B7355]">Komod Pavlodar · мебель на заказ</p>
+                <h2 id="dialog-title" className="font-playfair mb-3 max-w-sm text-4xl italic leading-[1.05] tracking-[-0.04em] sm:text-5xl">Давайте создадим ваш интерьер</h2>
+                <p className="mb-7 max-w-sm text-sm leading-relaxed text-[#6f675c]">Расскажите, как к вам обращаться и оставьте номер. Мы зададим несколько вопросов и подготовим предварительный расчёт.</p>
+                <form onSubmit={(event) => { event.preventDefault(); setIsSubmitted(true) }} className="space-y-3">
+                  <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#595247]">Ваше имя</span><input autoFocus required name="name" autoComplete="name" placeholder="Например, Алия" className="w-full rounded-2xl border border-[#d8cbb9] bg-white/65 px-4 py-3.5 text-[#29251f] outline-none transition-all placeholder:text-[#9e9588] focus:border-[#8B7355] focus:bg-white focus:ring-4 focus:ring-[#8B7355]/10" /></label>
+                  <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#595247]">Номер телефона</span><input required name="phone" type="tel" autoComplete="tel" inputMode="tel" placeholder="+7 (___) ___-__-__" className="w-full rounded-2xl border border-[#d8cbb9] bg-white/65 px-4 py-3.5 text-[#29251f] outline-none transition-all placeholder:text-[#9e9588] focus:border-[#8B7355] focus:bg-white focus:ring-4 focus:ring-[#8B7355]/10" /></label>
+                  <button type="submit" className="mt-2 w-full rounded-2xl bg-[#8B7355] px-5 py-4 text-sm font-semibold text-white shadow-lg shadow-[#8B7355]/20 transition-all hover:-translate-y-0.5 hover:bg-[#705c44] hover:shadow-xl active:translate-y-0">Отправить заявку</button>
+                </form>
+                <div className="mt-5 flex items-center justify-center gap-2 text-xs text-[#7c7469]">
+                  <span>или напишите нам</span>
+                  <a href="https://www.instagram.com/komod_pavlodar/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-semibold text-[#8B7355] hover:text-[#705c44]"><Camera size={14} />@komod_pavlodar</a>
+                </div>
               </>
             )}
           </div>

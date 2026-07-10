@@ -15,4 +15,13 @@ body { margin: 0; background: #171717; }
 .hero-reveal { animation-name:heroReveal; animation-duration:1.1s; }
 .hero-fade { animation-name:heroFadeUp; animation-duration:1s; }
 .hero-zoom { animation:heroZoom 2s cubic-bezier(0.16,1,0.3,1) forwards; }
-@media (prefers-reduced-motion: reduce){ .hero-anim,.hero-zoom{ animation:none; opacity:1; } }
+@keyframes modalBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalCardIn { 0% { opacity: 0; transform: translateY(24px) scale(.96); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes successIn { 0% { opacity: 0; transform: translateY(12px); } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes navMenuIn { 0% { opacity: 0; transform: translateY(-8px) scale(.98); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+.modal-backdrop { animation: modalBackdropIn .28s ease-out both; }
+.modal-card { animation: modalCardIn .55s cubic-bezier(.16,1,.3,1) both; }
+.success-in { animation: successIn .45s cubic-bezier(.16,1,.3,1) both; }
+.nav-menu-in { animation: navMenuIn .3s cubic-bezier(.16,1,.3,1) both; }
+
+@media (prefers-reduced-motion: reduce){ .hero-anim,.hero-zoom{ animation:none; opacity:1; } .modal-backdrop,.modal-card,.success-in,.nav-menu-in { animation: none; } }
