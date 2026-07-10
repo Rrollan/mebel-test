@@ -120,6 +120,82 @@ document.addEventListener('DOMContentLoaded', () => {
         
     });
 
+    // --- Interactive before/after room reveal ---
+    const roomReveal = document.querySelector('[data-room-reveal]');
+
+    if (roomReveal) {
+        const afterLayer = roomReveal.querySelector('.room-reveal-after');
+        const revealCursor = roomReveal.querySelector('.room-reveal-cursor');
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let completed = false;
+        let exploredDistance = 0;
+        let previousPoint = null;
+
+        const setRevealPosition = (clientX, clientY) => {
+            const rect = roomReveal.getBoundingClientRect();
+            const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+            const y = Math.max(0, Math.min(clientY - rect.top, rect.height));
+            const xPercent = `${(x / rect.width) * 100}%`;
+            const yPercent = `${(y / rect.height) * 100}%`;
+
+            afterLayer.style.setProperty('--reveal-x', xPercent);
+            afterLayer.style.setProperty('--reveal-y', yPercent);
+            revealCursor.style.setProperty('--cursor-x', xPercent);
+            revealCursor.style.setProperty('--cursor-y', yPercent);
+
+            if (previousPoint) exploredDistance += Math.hypot(x - previousPoint.x, y - previousPoint.y);
+            previousPoint = { x, y };
+
+            if (!completed && exploredDistance > rect.width * 1.4) {
+                completed = true;
+                roomReveal.classList.add('is-complete');
+                roomReveal.classList.remove('is-active');
+            }
+        };
+
+        roomReveal.addEventListener('pointerenter', (event) => {
+            if (completed || reducedMotion) return;
+            previousPoint = null;
+            roomReveal.classList.add('is-active');
+            setRevealPosition(event.clientX, event.clientY);
+        });
+
+        roomReveal.addEventListener('pointermove', (event) => {
+            if (completed || reducedMotion || event.pointerType === 'touch') return;
+            setRevealPosition(event.clientX, event.clientY);
+        }, { passive: true });
+
+        roomReveal.addEventListener('pointerleave', () => {
+            if (!completed) roomReveal.classList.remove('is-active');
+            previousPoint = null;
+        });
+
+        roomReveal.addEventListener('click', (event) => {
+            if (completed) {
+                completed = false;
+                exploredDistance = 0;
+                roomReveal.classList.remove('is-complete');
+                roomReveal.classList.add('is-active');
+                setRevealPosition(event.clientX, event.clientY);
+                return;
+            }
+
+            if (event.pointerType === 'touch' || reducedMotion) {
+                completed = true;
+                roomReveal.classList.add('is-complete');
+                roomReveal.classList.remove('is-active');
+            }
+        });
+
+        roomReveal.addEventListener('keydown', (event) => {
+            if (!['Enter', ' ', 'ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+            event.preventDefault();
+            completed = event.key === 'ArrowLeft' ? false : event.key === 'ArrowRight' ? true : !completed;
+            roomReveal.classList.toggle('is-complete', completed);
+            roomReveal.classList.remove('is-active');
+        });
+    }
+
     // --- Sticky Header ---
     const header = document.querySelector('.header');
     window.addEventListener('scroll', () => {
