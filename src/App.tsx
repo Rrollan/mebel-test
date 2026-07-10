@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Menu } from 'lucide-react'
+import emptyRoomImage from '../assets/room-empty.jpg'
+import furnishedRoomImage from '../assets/room-furnished.jpg'
 
 const SPOTLIGHT_R = 300
-const BG_IMAGE_1 = `${import.meta.env.BASE_URL}assets/room-empty.jpg`
-const BG_IMAGE_2 = `${import.meta.env.BASE_URL}assets/room-furnished.jpg`
+const BG_IMAGE_1 = emptyRoomImage
+const BG_IMAGE_2 = furnishedRoomImage
 
 type Point = { x: number; y: number }
 
