@@ -127,72 +127,80 @@ document.addEventListener('DOMContentLoaded', () => {
         const afterLayer = roomReveal.querySelector('.room-reveal-after');
         const revealCursor = roomReveal.querySelector('.room-reveal-cursor');
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        let completed = false;
-        let exploredDistance = 0;
-        let previousPoint = null;
+        let pointerInside = false;
+        let targetX = 0;
+        let targetY = 0;
+        let currentX = 0;
+        let currentY = 0;
+        let currentRadius = 0;
+        let targetRadius = 0;
+        let frameId;
 
-        const setRevealPosition = (clientX, clientY) => {
+        const renderReveal = () => {
+            currentX += (targetX - currentX) * 0.14;
+            currentY += (targetY - currentY) * 0.14;
+            currentRadius += (targetRadius - currentRadius) * 0.1;
+
+            const x = `${currentX}px`;
+            const y = `${currentY}px`;
+            afterLayer.style.setProperty('--reveal-x', x);
+            afterLayer.style.setProperty('--reveal-y', y);
+            afterLayer.style.setProperty('--reveal-size', `${Math.max(0, currentRadius)}px`);
+            revealCursor.style.setProperty('--cursor-x', x);
+            revealCursor.style.setProperty('--cursor-y', y);
+            revealCursor.style.setProperty('--cursor-size', `${Math.max(0, currentRadius * 2)}px`);
+
+            const moving = Math.abs(targetX - currentX) > 0.15 || Math.abs(targetY - currentY) > 0.15 || Math.abs(targetRadius - currentRadius) > 0.15;
+            if (moving || pointerInside) frameId = requestAnimationFrame(renderReveal);
+            else frameId = null;
+        };
+
+        const requestRender = () => {
+            if (!frameId) frameId = requestAnimationFrame(renderReveal);
+        };
+
+        const setTargetPosition = (clientX, clientY) => {
             const rect = roomReveal.getBoundingClientRect();
-            const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-            const y = Math.max(0, Math.min(clientY - rect.top, rect.height));
-            const xPercent = `${(x / rect.width) * 100}%`;
-            const yPercent = `${(y / rect.height) * 100}%`;
-
-            afterLayer.style.setProperty('--reveal-x', xPercent);
-            afterLayer.style.setProperty('--reveal-y', yPercent);
-            revealCursor.style.setProperty('--cursor-x', xPercent);
-            revealCursor.style.setProperty('--cursor-y', yPercent);
-
-            if (previousPoint) exploredDistance += Math.hypot(x - previousPoint.x, y - previousPoint.y);
-            previousPoint = { x, y };
-
-            if (!completed && exploredDistance > rect.width * 1.4) {
-                completed = true;
-                roomReveal.classList.add('is-complete');
-                roomReveal.classList.remove('is-active');
-            }
+            targetX = Math.max(0, Math.min(clientX - rect.left, rect.width));
+            targetY = Math.max(0, Math.min(clientY - rect.top, rect.height));
+            targetRadius = Math.min(260, Math.max(170, rect.width * 0.27));
+            requestRender();
         };
 
         roomReveal.addEventListener('pointerenter', (event) => {
-            if (completed || reducedMotion) return;
-            previousPoint = null;
+            if (reducedMotion || event.pointerType === 'touch') return;
+            const rect = roomReveal.getBoundingClientRect();
+            targetX = currentX = Math.max(0, Math.min(event.clientX - rect.left, rect.width));
+            targetY = currentY = Math.max(0, Math.min(event.clientY - rect.top, rect.height));
+            currentRadius = 0;
+            pointerInside = true;
             roomReveal.classList.add('is-active');
-            setRevealPosition(event.clientX, event.clientY);
+            setTargetPosition(event.clientX, event.clientY);
         });
 
         roomReveal.addEventListener('pointermove', (event) => {
-            if (completed || reducedMotion || event.pointerType === 'touch') return;
-            setRevealPosition(event.clientX, event.clientY);
+            if (reducedMotion || event.pointerType === 'touch') return;
+            setTargetPosition(event.clientX, event.clientY);
         }, { passive: true });
 
         roomReveal.addEventListener('pointerleave', () => {
-            if (!completed) roomReveal.classList.remove('is-active');
-            previousPoint = null;
+            pointerInside = false;
+            targetRadius = 0;
+            roomReveal.classList.remove('is-active');
+            requestRender();
         });
 
         roomReveal.addEventListener('click', (event) => {
-            if (completed) {
-                completed = false;
-                exploredDistance = 0;
-                roomReveal.classList.remove('is-complete');
-                roomReveal.classList.add('is-active');
-                setRevealPosition(event.clientX, event.clientY);
-                return;
-            }
-
-            if (event.pointerType === 'touch' || reducedMotion) {
-                completed = true;
-                roomReveal.classList.add('is-complete');
-                roomReveal.classList.remove('is-active');
-            }
+            if (event.pointerType !== 'touch' && !reducedMotion) return;
+            const complete = !roomReveal.classList.contains('is-complete');
+            roomReveal.classList.toggle('is-complete', complete);
         });
 
         roomReveal.addEventListener('keydown', (event) => {
             if (!['Enter', ' ', 'ArrowLeft', 'ArrowRight'].includes(event.key)) return;
             event.preventDefault();
-            completed = event.key === 'ArrowLeft' ? false : event.key === 'ArrowRight' ? true : !completed;
-            roomReveal.classList.toggle('is-complete', completed);
-            roomReveal.classList.remove('is-active');
+            const complete = event.key === 'ArrowLeft' ? false : event.key === 'ArrowRight' ? true : !roomReveal.classList.contains('is-complete');
+            roomReveal.classList.toggle('is-complete', complete);
         });
     }
 
